@@ -1,1 +1,2 @@
-/dexbuytools/wallet_config.py
+/config/wallet_data.py
+/config/general.py
