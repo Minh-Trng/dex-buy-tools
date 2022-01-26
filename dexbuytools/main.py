@@ -2,12 +2,18 @@ import click
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from dexbuytools.helpers import get_helper
+import dexbuytools.config as config
 import yaml
 
+
 # TODO: check whether path or just filename should be passed
-def load_buy_params(file_path):
-    with open(file_path, 'r') as f:
-        return yaml.safe_load(f)
+def adjust_config(buy_params_path, wallet_data_path):
+    if buy_params_path is not None:
+        config.replace_buy_params(buy_params_path)
+
+    if wallet_data_path is not None:
+        config.replace_wallet_data(wallet_data_path)
+
 
 @click.group()
 def dexbuy():
@@ -15,20 +21,21 @@ def dexbuy():
 
 
 @dexbuy.command()
-@click.argument('address')
+@click.argument('token_address')
 @click.argument('network_name')
-@click.option('--buy_params_path', default='config/buy_params.yml')
+@click.option('--buy_params_path', default=None)
+@click.option('--wallet_data_path', default=None)
 @click.option('--dex_name', default=None)
-def instant(address, network_name, buy_params_path, dex_name):
-    helper = get_helper(network_name)
-    buy_params = load_buy_params(buy_params_path)
+@click.option('--custom_rpc', default=None)
+def instant(token_address, network_name, buy_params_path, wallet_data_path, dex_name, custom_rpc):
+    helper = get_helper(network_name, dex_name, custom_rpc)
+    adjust_config(buy_params_path, wallet_data_path)
 
-    helper.buy_instantly(address, buy_params, dex_name)
-
+    helper.buy_instantly(token_address)
 
 
 @dexbuy.command()
-#TODO: address, name or symbol have to be given
+# TODO: address, name or symbol have to be given
 @click.argument('network')
 def onliquidity(**kwargs):
     """
@@ -36,6 +43,7 @@ def onliquidity(**kwargs):
         search_term
     """
     raise NotImplementedError
+
 
 if __name__ == '__main__':
     dexbuy()
