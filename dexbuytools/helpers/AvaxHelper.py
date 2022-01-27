@@ -23,7 +23,7 @@ class AvaxHelper(EvmBaseHelper):
         )
 
     def buy_instantly(self, token_address):
-        receipt = super().perform_uniswap_style_buy(self.w3, self.dex, token_address)
+        receipt = super().perform_uniswapv2_style_buy(self.w3, self.dex, token_address)
 
         log_utils.log_info(f"buy performed. receipt: {receipt}")
 

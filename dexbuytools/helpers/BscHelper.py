@@ -22,7 +22,7 @@ class BscHelper(EvmBaseHelper):
         )
 
     def buy_instantly(self, token_address):
-        receipt = super().perform_uniswap_style_buy(self.w3, self.dex, token_address, chain_data["MAIN_TOKEN_ADDRESS"])
+        receipt = super().perform_uniswapv2_style_buy(self.w3, self.dex, token_address, chain_data["MAIN_TOKEN_ADDRESS"])
 
         log_utils.log_info(f"buy performed. receipt: {receipt}")
 

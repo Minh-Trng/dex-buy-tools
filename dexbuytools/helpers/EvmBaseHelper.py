@@ -12,7 +12,7 @@ class EvmBaseHelper(abc.ABC):
     def buy_instantly(self, address):
         pass
 
-    def perform_uniswap_style_buy(self, w3, dex, token_address, main_token_address):
+    def perform_uniswapv2_style_buy(self, w3, dex, token_address, main_token_address):
         token_address = w3.toChecksumAddress(token_address)
         wallet_address = self._get_wallet_address_from_key(w3)
         amount_out_min = 1
@@ -41,7 +41,6 @@ class EvmBaseHelper(abc.ABC):
         signed_tx = w3.eth.account.signTransaction(tx, private_key=config.wallet_data['PRIVATE_KEY'])
         tx_hash = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
         return w3.eth.waitForTransactionReceipt(tx_hash)
-
 
     @abc.abstractmethod
     def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):

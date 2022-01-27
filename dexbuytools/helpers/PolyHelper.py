@@ -4,22 +4,22 @@ from web3.middleware import geth_poa_middleware
 from dexbuytools import log_utils
 from dexbuytools.config import general_params
 from dexbuytools.helpers.EvmBaseHelper import EvmBaseHelper
-from dexbuytools.helpers.data.ftm import chain_data
+from dexbuytools.helpers.data.poly import chain_data
 
 
-class FtmHelper(EvmBaseHelper):
+class PolyHelper(EvmBaseHelper):
 
-    DEFAULT_DEX = "SPOOKY"
-    DEFAULT_RPC = general_params.FTM_RPC_URL
+    DEFAULT_DEX = "QS"
+    DEFAULT_RPC = general_params.POLY_RPC_URL
 
     def __init__(self, dex_name=None, custom_rpc=None):
-        self.w3 = Web3(Web3.HTTPProvider(FtmHelper.DEFAULT_RPC if custom_rpc is None else custom_rpc))
+        self.w3 = Web3(Web3.HTTPProvider(PolyHelper.DEFAULT_RPC if custom_rpc is None else custom_rpc))
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         self.dex = EvmBaseHelper.get_dex_contract(
             self.w3,
             chain_data,
-            FtmHelper.DEFAULT_DEX if dex_name is None else dex_name
+            PolyHelper.DEFAULT_DEX if dex_name is None else dex_name
         )
 
     def buy_instantly(self, token_address):

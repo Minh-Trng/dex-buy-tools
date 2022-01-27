@@ -22,9 +22,20 @@ class EthHelper(EvmBaseHelper):
         )
 
     def buy_instantly(self, token_address):
-        receipt = super().perform_uniswap_style_buy(self.w3, self.dex, token_address)
+        try:
+            receipt = super().perform_uniswapv2_style_buy(self.w3, self.dex, token_address)
+            log_utils.log_info(f"buy performed. receipt: {receipt}")
+        except:
+            self._perform_uniswapv3_style_buy(token_address)
 
-        log_utils.log_info(f"buy performed. receipt: {receipt}")
+    def _perform_uniswapv3_style_buy(self, token_address):
+        uniswapv3 = self.w3.eth.contract(
+            abi=chain_data['ROUTER_ABI_UNIV3'],
+            address=chain_data['ROUTER_ADDRESS_UNIV3']
+        )
+
+        raise NotImplementedError
+
 
     def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):
         raise NotImplementedError()
