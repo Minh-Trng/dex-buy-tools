@@ -15,7 +15,7 @@ class EthHelper(EvmBaseHelper):
     def __init__(self, dex_name=None, custom_rpc=None):
         self.w3 = Web3(Web3.HTTPProvider(EthHelper.DEFAULT_RPC if custom_rpc is None else custom_rpc))
 
-        self.dex = EvmBaseHelper.get_dex_contract(
+        self.dex_router = EvmBaseHelper.get_dex_router_contract(
             self.w3,
             chain_data,
             EthHelper.DEFAULT_DEX if dex_name is None else dex_name
@@ -23,9 +23,9 @@ class EthHelper(EvmBaseHelper):
 
     def buy_instantly(self, token_address):
         try:
-            receipt = super().perform_uniswapv2_style_buy(self.w3, self.dex, token_address)
+            receipt = super().perform_uniswapv2_style_buy(self.w3, self.dex_router, token_address, chain_data["MAIN_TOKEN_ADDRESS"])
             log_utils.log_info(f"buy performed. receipt: {receipt}")
-        except:
+        except Exception as e:
             self._perform_uniswapv3_style_buy(token_address)
 
     def _perform_uniswapv3_style_buy(self, token_address):

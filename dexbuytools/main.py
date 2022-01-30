@@ -21,13 +21,13 @@ def dexbuy():
 
 
 @dexbuy.command()
-@click.argument('token_address')
 @click.argument('network_name')
+@click.argument('token_address')
 @click.option('--buy_params_path', default=None)
 @click.option('--wallet_data_path', default=None)
 @click.option('--dex_name', default=None)
 @click.option('--custom_rpc', default=None)
-def instant(token_address, network_name, buy_params_path, wallet_data_path, dex_name, custom_rpc):
+def instant(network_name, token_address, buy_params_path, wallet_data_path, dex_name, custom_rpc):
     helper = get_helper(network_name, dex_name, custom_rpc)
     adjust_config(buy_params_path, wallet_data_path)
 

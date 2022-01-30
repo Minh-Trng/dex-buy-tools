@@ -2,6 +2,12 @@
 # denominated in the networks main token, e.g. Ether for the Ethereum network
 AMOUNT: 0.0001
 
+# either get at least this many tokens out of the swap or revert the tx
+AMOUNT_OUT_MIN: 0
+
+#uses the swapExactTokensForTokens method to swap (e.g. using WETH instead of ETH -> cheaper)
+USE_WRAPPED_MAIN_TOKEN: false
+
 # many tokens impose limit on how many tokens can be bought
 MAX_PERCENTAGE_OF_TOTAL_SUPPLY_BUY_LIMIT: 5
 
