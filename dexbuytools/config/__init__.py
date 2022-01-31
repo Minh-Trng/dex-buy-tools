@@ -10,6 +10,9 @@ with open(f'{file_dir}/buy_params.yml', 'r') as f:
 with open(f'{file_dir}/wallet_data.yml', 'r') as f:
     wallet_data = yaml.safe_load(f)
 
+with open(f'{file_dir}/general_params.yml', 'r') as f:
+    general_params = yaml.safe_load(f)
+
 def replace_buy_params(file_path):
     global buy_params
     with open(file_path, 'r') as f:
@@ -19,3 +22,8 @@ def replace_wallet_data(file_path):
     global wallet_data
     with open(file_path, 'r') as f:
         wallet_data = yaml.safe_load(f)
+
+def replace_general_params(file_path):
+    global general_params
+    with open(file_path, 'r') as f:
+        general_params = yaml.safe_load(f)

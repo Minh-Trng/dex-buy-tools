@@ -6,13 +6,15 @@ import dexbuytools.config as config
 import yaml
 
 
-# TODO: check whether path or just filename should be passed
-def adjust_config(buy_params_path, wallet_data_path):
+def adjust_config(buy_params_path, wallet_data_path, general_params_path):
     if buy_params_path is not None:
         config.replace_buy_params(buy_params_path)
 
     if wallet_data_path is not None:
         config.replace_wallet_data(wallet_data_path)
+
+    if general_params_path is not None:
+        config.replace_general_params(general_params_path)
 
 
 @click.group()
@@ -25,12 +27,12 @@ def dexbuy():
 @click.argument('token_address')
 @click.option('--buy_params_path', default=None)
 @click.option('--wallet_data_path', default=None)
+@click.option('--general_params_path', default=None)
 @click.option('--dex_name', default=None)
 @click.option('--custom_rpc', default=None)
-def instant(network_name, token_address, buy_params_path, wallet_data_path, dex_name, custom_rpc):
+def instant(network_name, token_address, buy_params_path, wallet_data_path, general_params_path, dex_name, custom_rpc):
+    adjust_config(buy_params_path, wallet_data_path, general_params_path)
     helper = get_helper(network_name, dex_name, custom_rpc)
-    adjust_config(buy_params_path, wallet_data_path)
-
     helper.buy_instantly(token_address)
 
 

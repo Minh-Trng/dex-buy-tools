@@ -3,17 +3,16 @@ from web3.middleware import geth_poa_middleware
 
 from dexbuytools import log_utils
 from dexbuytools.helpers.EvmBaseHelper import EvmBaseHelper
-import dexbuytools.config.general_params as general_params
+import dexbuytools.config as config
 from dexbuytools.helpers.data.eth import chain_data
 
 
 class EthHelper(EvmBaseHelper):
 
     DEFAULT_DEX = "UNI"
-    DEFAULT_RPC = general_params.ETH_RPC_URL
 
     def __init__(self, dex_name=None, custom_rpc=None):
-        self.w3 = Web3(Web3.HTTPProvider(EthHelper.DEFAULT_RPC if custom_rpc is None else custom_rpc))
+        self.w3 = Web3(Web3.HTTPProvider(config.general_params['ETH_RPC_URL'] if custom_rpc is None else custom_rpc))
 
         self.dex_router = EvmBaseHelper.get_dex_router_contract(
             self.w3,

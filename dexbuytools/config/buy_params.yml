@@ -5,8 +5,11 @@ AMOUNT: 0.0001
 # either get at least this many tokens out of the swap or revert the tx
 AMOUNT_OUT_MIN: 0
 
-#uses the swapExactTokensForTokens method to swap (e.g. using WETH instead of ETH -> cheaper)
+# uses the swapExactTokensForTokens method to swap (e.g. using WETH instead of ETH -> cheaper)
 USE_WRAPPED_MAIN_TOKEN: false
+
+# allows for quick selling, if done manually
+APPROVE_AFTER_BUY: true
 
 # many tokens impose limit on how many tokens can be bought
 MAX_PERCENTAGE_OF_TOTAL_SUPPLY_BUY_LIMIT: 5
