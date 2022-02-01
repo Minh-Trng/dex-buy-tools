@@ -1,14 +1,15 @@
 import abc
 import time
-
 import dexbuytools.config as config
 from dexbuytools import log_utils
 from dexbuytools.helpers.data.general import ERC20_ABI
+from eth_account.account import Account
+from flashbots import flashbot
 
 
 class EvmBaseHelper(abc.ABC):
 
-    DEADLINE_OFFSET = 60*5 #5 minutes
+    DEADLINE_OFFSET = 60 #1 minute
     @abc.abstractmethod
     def buy_instantly(self, address):
         pass
@@ -37,22 +38,22 @@ class EvmBaseHelper(abc.ABC):
                 path,
                 to,
                 deadline
-            ).buildTransaction({
+            ).buildTransaction(self._get_tx_params(w3, wallet_address, {
                 'nonce': w3.eth.getTransactionCount(wallet_address),
                 'gas': 3000000,
                 'gasPrice': w3.eth.gas_price + config.buy_params['GAS_PRICE_BONUS']
-            })
+            }))
         else:
             tx = dex_router.functions[swap_method](
                 amount_out_min,
                 path,
                 to,
                 deadline
-            ).buildTransaction({
+            ).buildTransaction(self._get_tx_params(w3, wallet_address, {
                 'value': int(config.buy_params['AMOUNT']*10**18),
                 'nonce': w3.eth.getTransactionCount(wallet_address),
                 'gasPrice': w3.eth.gas_price + config.buy_params['GAS_PRICE_BONUS']
-            })
+            }))
 
             # for some reason estimating gas does not work for method 'swapExactTokensForTokensSupportingFeeOnTransferTokens'
             gas_estimate = w3.eth.estimate_gas(tx)
@@ -63,9 +64,7 @@ class EvmBaseHelper(abc.ABC):
 
             tx['gas'] = gas_estimate + config.buy_params['GAS_LIMIT_BONUS']
 
-        signed_tx = w3.eth.account.signTransaction(tx, private_key=config.wallet_data['PRIVATE_KEY'])
-        tx_hash = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
-        receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        receipt = self._sign_and_send_tx(w3, tx)
 
         log_utils.log_info(f"buy of {token_address} performed on DEX {dex_router.address}. receipt: {receipt}")
 
@@ -99,20 +98,29 @@ class EvmBaseHelper(abc.ABC):
     def _get_wallet_address_from_key(self, w3, value=None):
         return w3.eth.account.from_key(config.wallet_data['PRIVATE_KEY']).address
 
-    def _get_overrides(self, w3, wallet_address):
+    def _get_tx_params(self, w3, wallet_address, defaults):
         if w3.provider.endpoint_uri == config.general_params['ETH_RPC_URL']:
-            w3.eth.fee_history(5, newest_block='latest', reward_percentiles=[10,90])
             priority_fee = w3.eth.max_priority_fee + config.buy_params['GAS_PRICE_BONUS']
-            base_fee = 'TODO'
+
+            #maxFeePerGas gets set automatically: https://github.com/ethereum/web3.py/pull/2055/commits/0e32f9d96844b1e267d7e51079395a1eeceddd78
             return {
                 'nonce': w3.eth.getTransactionCount(wallet_address),
-                'type': 2, # EIP-1559
-                'gas': 300000, # =gasLimit
+                'type': 2,  # EIP-1559
+                'gas': 300000,  # =gasLimit; REVIEW: use params to set this?
                 'maxPriorityFeePerGas': priority_fee,
-                'maxFeePerGas': base_fee*2+priority_fee,
             }
 
-        raise NotImplementedError
+        return defaults
+
+    def _sign_and_send_tx(self, w3, tx):
+        if w3.provider.endpoint_uri == config.general_params['ETH_RPC_URL']:
+            'TODO: send to flashbots'
+            account = Account.from_key(config.wallet_data['PRIVATE_KEY'])
+            flashbot(w3, account)
+        else:
+            signed_tx = w3.eth.account.signTransaction(tx, private_key=config.wallet_data['PRIVATE_KEY'])
+            tx_hash = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+            return w3.eth.waitForTransactionReceipt(tx_hash)
 
     @abc.abstractmethod
     def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):

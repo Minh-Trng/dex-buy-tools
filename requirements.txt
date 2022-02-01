@@ -1,5 +1,6 @@
-web3~=5.26.0
+web3~=5.27.0
 requests~=2.27.1
 setuptools~=57.0.0
 click~=8.0.3
 PyYAML~=6.0
+DexBuyTools~=0.1.0
