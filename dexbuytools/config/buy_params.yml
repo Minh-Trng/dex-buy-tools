@@ -25,8 +25,11 @@ MIN_AMOUNT_OF_LIQUIDITY: 1
 GAS_PRICE_BONUS: 1000000000 # 1 GWEI
 GAS_LIMIT_BONUS: 100000
 
-# used for flashbots bundles, only applicable to Ethereum network. deonimated in ETH
+# used for flashbots bundles, only applicable to Ethereum network. denominated in ETH
 BRIBE: 0.01
+
+# seconds until the trade is considered invalid
+DEADLINE_OFFSET: 60
 
 # cancel buy, if current gas costs of the network are too high, especially useful for Ethereum network
 # denominated in the networks main token
