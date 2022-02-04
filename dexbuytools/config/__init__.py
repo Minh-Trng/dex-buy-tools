@@ -7,7 +7,7 @@ file_dir = os.path.dirname(__file__)
 with open(f'{file_dir}/buy_params.yml', 'r') as f:
     buy_params = yaml.safe_load(f)
 
-with open(f'{file_dir}/wallet_data.yml', 'r') as f:
+with open(f'{file_dir}/wallet_data_template.yml', 'r') as f:
     wallet_data = yaml.safe_load(f)
 
 with open(f'{file_dir}/general_params.yml', 'r') as f:
