@@ -16,6 +16,10 @@ import requests
 class EvmBaseHelper(abc.ABC):
     DEADLINE_OFFSET = config.buy_params['DEADLINE_OFFSET']
 
+    def __init__(self, w3, chain_data):
+        self.w3 = w3,
+        self.chain_data = chain_data
+
     @abc.abstractmethod
     def buy_instantly(self, address):
         pass

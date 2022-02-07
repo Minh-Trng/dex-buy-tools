@@ -12,7 +12,9 @@ class EthHelper(EvmBaseHelper):
     DEFAULT_DEX = "UNI"
 
     def __init__(self, dex_name=None, custom_rpc=None):
-        self.w3 = Web3(Web3.HTTPProvider(config.general_params['ETH_RPC_URL'] if custom_rpc is None else custom_rpc))
+        w3 = Web3(Web3.HTTPProvider(config.general_params['ETH_RPC_URL'] if custom_rpc is None else custom_rpc))
+
+        super().__init__(w3, chain_data)
 
         self.dex_router = EvmBaseHelper.get_dex_router_contract(
             self.w3,
