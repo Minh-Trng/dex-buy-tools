@@ -26,14 +26,12 @@ class EvmBaseHelper(abc.ABC):
 
     def perform_uniswapv2_style_buy(
             self,
-            w3,
             dex_router,
             token_address,
-            main_token_address,
             swap_method='swapExactETHForTokensSupportingFeeOnTransferTokens'):
-        token_address = w3.toChecksumAddress(token_address)
-        main_token_address = w3.toChecksumAddress(main_token_address)
-        wallet_address = w3.toChecksumAddress(self._get_wallet_address_from_key(w3))
+        token_address = self.w3.toChecksumAddress(token_address)
+        main_token_address = self.w3.toChecksumAddress(self.chain_data['MAIN_TOKEN_ADDRESS'])
+        wallet_address = self.w3.toChecksumAddress(self._get_wallet_address_from_key(self.w3))
         amount_out_min = config.buy_params['AMOUNT_OUT_MIN']
         path = [main_token_address, token_address]
         to = wallet_address
@@ -48,10 +46,10 @@ class EvmBaseHelper(abc.ABC):
                 path,
                 to,
                 deadline
-            ).buildTransaction(self._get_tx_params(w3, wallet_address, {
-                'nonce': w3.eth.getTransactionCount(wallet_address),
+            ).buildTransaction(self._get_tx_params(self.w3, wallet_address, {
+                'nonce': self.w3.eth.getTransactionCount(wallet_address),
                 'gas': 3000000,
-                'gasPrice': w3.eth.gas_price + config.buy_params['GAS_PRICE_BONUS']
+                'gasPrice': self.w3.eth.gas_price + config.buy_params['GAS_PRICE_BONUS']
             }))
         else:
             tx = dex_router.functions[swap_method](
@@ -59,14 +57,14 @@ class EvmBaseHelper(abc.ABC):
                 path,
                 to,
                 deadline
-            ).buildTransaction(self._get_tx_params(w3, wallet_address, {
+            ).buildTransaction(self._get_tx_params(self.w3, wallet_address, {
                 'value': int(config.buy_params['AMOUNT'] * 10 ** 18),
-                'nonce': w3.eth.getTransactionCount(wallet_address),
-                'gasPrice': w3.eth.gas_price + config.buy_params['GAS_PRICE_BONUS']
+                'nonce': self.w3.eth.getTransactionCount(wallet_address),
+                'gasPrice': self.w3.eth.gas_price + config.buy_params['GAS_PRICE_BONUS']
             }))
 
             # for some reason estimating gas does not work for method 'swapExactTokensForTokensSupportingFeeOnTransferTokens'
-            gas_estimate = w3.eth.estimate_gas(tx)
+            gas_estimate = self.w3.eth.estimate_gas(tx)
             if gas_estimate * tx['gasPrice'] > config.buy_params["MAX_GAS_ESTIMATE"] * 10 ** 18:
                 log_utils.log_error("Transaction not executed, because the gas estimate is greater than the limit "
                                     f"configured in the buy_params-file. Gas estimate in wei : {tx['gas'] * tx['gasPrice']}")
@@ -74,12 +72,12 @@ class EvmBaseHelper(abc.ABC):
 
             tx['gas'] = gas_estimate + config.buy_params['GAS_LIMIT_BONUS']
 
-        receipt = self._sign_and_send_tx(w3, tx, wallet_address)
+        receipt = self._sign_and_send_tx(self.w3, tx, wallet_address)
 
         log_utils.log_info(f"buy of {token_address} performed on DEX {dex_router.address}. receipt: {receipt}")
 
         if config.buy_params['APPROVE_AFTER_BUY']:
-            self._approve(w3, dex_router.address, token_address, wallet_address)
+            self._approve(self.w3, dex_router.address, token_address, wallet_address)
 
         return receipt
 

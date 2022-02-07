@@ -24,7 +24,7 @@ class AvaxHelper(EvmBaseHelper):
         )
 
     def buy_instantly(self, token_address):
-        super().perform_uniswapv2_style_buy(self.w3, self.dex_router, token_address, chain_data["MAIN_TOKEN_ADDRESS"],
+        super().perform_uniswapv2_style_buy(self.dex_router, token_address,
                                             swap_method="swapExactAVAXForTokensSupportingFeeOnTransferTokens")
 
     def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):
