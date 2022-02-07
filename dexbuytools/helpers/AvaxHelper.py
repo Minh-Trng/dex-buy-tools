@@ -18,13 +18,14 @@ class AvaxHelper(EvmBaseHelper):
         super().__init__(w3, chain_data)
 
         self.dex_router = EvmBaseHelper.get_dex_router_contract(
-            self.w3,
+            w3,
             chain_data,
             AvaxHelper.DEFAULT_DEX if dex_name is None else dex_name
         )
 
     def buy_instantly(self, token_address):
-        super().perform_uniswapv2_style_buy(self.w3, self.dex_router, token_address, chain_data["MAIN_TOKEN_ADDRESS"])
+        super().perform_uniswapv2_style_buy(self.w3, self.dex_router, token_address, chain_data["MAIN_TOKEN_ADDRESS"],
+                                            swap_method="swapExactAVAXForTokensSupportingFeeOnTransferTokens")
 
     def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):
         raise NotImplementedError()

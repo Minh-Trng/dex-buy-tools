@@ -17,7 +17,7 @@ class BscHelper(EvmBaseHelper):
         super().__init__(w3, chain_data)
 
         self.dex_router = EvmBaseHelper.get_dex_router_contract(
-            self.w3,
+            w3,
             chain_data,
             BscHelper.DEFAULT_DEX if dex_name is None else dex_name
         )
