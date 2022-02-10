@@ -17,7 +17,7 @@ class BscHelper(EvmBaseHelper):
         super().__init__(w3, chain_data, dex_name, config)
 
     def buy_instantly(self, token_address):
-        super().perform_uniswapv2_style_buy(token_address)
+        return super().perform_uniswapv2_style_buy(token_address)
 
     def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):
         raise NotImplementedError()

@@ -18,8 +18,7 @@ class EthHelper(EvmBaseHelper):
 
     def buy_instantly(self, token_address):
         try:
-            receipt = super().perform_uniswapv2_style_buy(token_address)
-            log_utils.log_info(f"buy performed. receipt: {receipt}")
+            return super().perform_uniswapv2_style_buy(token_address)
         except Exception as e:
             self._perform_uniswapv3_style_buy(token_address)
 
