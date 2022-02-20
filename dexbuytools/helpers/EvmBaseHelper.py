@@ -146,13 +146,12 @@ class EvmBaseHelper(abc.ABC):
 
             bundle = [self.w3.toHex(signed_tx.rawTransaction), self.w3.toHex(signed_bribe_tx.rawTransaction)]
 
-            'TODO: simulation keeps returning 500 internal server error, not debuggable atm'
-            FlashBotsUtil.simulate(bundle, self.w3.eth.block_number + 1, self.config.wallet_data['PRIVATE_KEY'])
+            FlashBotsUtil.simulate(bundle, Web3.toHex(self.w3.eth.block_number + 1), self.config.wallet_data['PRIVATE_KEY'])
             pass
 
             # block_number = w3.eth.block_number
             # for i in range(1, 3):
-            #     w3.flashbots.send_bundle(bundle, target_block_number=block_number + i)
+            #     w3.flashbots.send_bundle(bundle, target_block_number=Web3.toHex(block_number + i))
 
         else:
             signed_tx = self.w3.eth.account.signTransaction(tx, private_key=self.config.wallet_data['PRIVATE_KEY'])
@@ -210,7 +209,7 @@ class FlashBotsUtil:
                 {
                     'txs': bundle,
                     'blockNumber': block_number,
-                    'stateBlockNumer': 'latest'
+                    'stateBlockNumber': 'latest'
                 }
             ]
         })
