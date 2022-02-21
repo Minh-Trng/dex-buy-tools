@@ -23,13 +23,9 @@ class EvmBaseHelper(abc.ABC):
     def buy_instantly(self, token_address):
         pass
 
-    def perform_uniswapv2_style_buy(
-            self,
-            token_address,
-            swap_method='swapExactETHForTokensSupportingFeeOnTransferTokens'):
+    def build_uniswapv2_style_tx(self, token_address, wallet_address, swap_method='swapExactETHForTokensSupportingFeeOnTransferTokens'):
         token_address = self.w3.toChecksumAddress(token_address)
         main_token_address = self.w3.toChecksumAddress(self.chain_data['MAIN_TOKEN_ADDRESS'])
-        wallet_address = self.w3.toChecksumAddress(self._get_wallet_address_from_key())
         amount_out_min = self.config.buy_params['AMOUNT_OUT_MIN']
         path = [main_token_address, token_address]
         to = wallet_address
@@ -44,22 +40,22 @@ class EvmBaseHelper(abc.ABC):
                 path,
                 to,
                 deadline
-            ).buildTransaction(self._get_tx_params(wallet_address, {
+            ).buildTransaction({
                 'nonce': self.w3.eth.getTransactionCount(wallet_address),
                 'gas': 3000000,
                 'gasPrice': self.w3.eth.gas_price + self.config.buy_params['GAS_PRICE_BONUS']
-            }))
+            })
         else:
             tx = self.dex_router.functions[swap_method](
                 amount_out_min,
                 path,
                 to,
                 deadline
-            ).buildTransaction(self._get_tx_params(wallet_address, {
+            ).buildTransaction({
                 'value': int(self.config.buy_params['AMOUNT'] * 10 ** 18),
                 'nonce': self.w3.eth.getTransactionCount(wallet_address),
                 'gasPrice': self.w3.eth.gas_price + self.config.buy_params['GAS_PRICE_BONUS']
-            }))
+            })
 
             # for some reason estimating gas does not work for method 'swapExactTokensForTokensSupportingFeeOnTransferTokens'
             gas_estimate = self.w3.eth.estimate_gas(tx)
@@ -70,7 +66,19 @@ class EvmBaseHelper(abc.ABC):
 
             tx['gas'] = gas_estimate + self.config.buy_params['GAS_LIMIT_BONUS']
 
-        receipt = self._sign_and_send_tx(tx, wallet_address)
+        return tx
+
+    def perform_uniswapv2_style_buy(
+            self,
+            token_address):
+
+        wallet_address = self.w3.toChecksumAddress(self._get_wallet_address_from_key())
+
+        tx = self.build_uniswapv2_style_tx(token_address, wallet_address)
+
+        signed_tx = self.w3.eth.account.signTransaction(tx, private_key=self.config.wallet_data['PRIVATE_KEY'])
+        tx_hash = self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+        receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
 
         log_utils.log_info(f"buy of {token_address} performed on DEX {self.dex_router.address}. receipt: {receipt}")
 
@@ -103,61 +111,6 @@ class EvmBaseHelper(abc.ABC):
     def _get_wallet_address_from_key(self):
         return self.w3.eth.account.from_key(self.config.wallet_data['PRIVATE_KEY']).address
 
-    def _get_tx_params(self, wallet_address, defaults):
-        if self.w3.provider.endpoint_uri == self.config.general_params['ETH_RPC_URL']:
-            latest_block = self.w3.eth.get_block('latest')
-
-            # maxFeePerGas gets set automatically: https://github.com/ethereum/web3.py/pull/2055/commits/0e32f9d96844b1e267d7e51079395a1eeceddd78
-            return {
-                'nonce': self.w3.eth.getTransactionCount(wallet_address),
-                'type': 2,  # EIP-1559
-                'gas': 300000,  # =gasLimit; REVIEW: use params to set this?
-                'chainId': 1,
-
-                # send bribe directly with flashbots later on, hence no priority fee
-                'maxPriorityFeePerGas': 0,
-                'maxFeePerGas': 2 * latest_block['baseFeePerGas']
-            }
-
-        return defaults
-
-    def _sign_and_send_tx(self, tx, wallet_address):
-        if self.w3.provider.endpoint_uri == self.config.general_params['ETH_RPC_URL']:
-
-            signed_tx = self.w3.eth.account.signTransaction(tx, private_key=self.config.wallet_data['PRIVATE_KEY'])
-
-            flashbots_check_and_send_contract = self.w3.eth.contract(
-                abi=eth_chain_data[f"FLASHBOTS_CHECK_AND_SEND_ABI"],
-                address=eth_chain_data[f"FLASHBOTS_CHECK_AND_SEND_ADDRESS"]
-            )
-            latest_block = self.w3.eth.get_block('latest')
-            bribe_tx = flashbots_check_and_send_contract.functions.checkBytesAndSendMulti([], [], []).buildTransaction({
-                'nonce': self.w3.eth.getTransactionCount(wallet_address) + 1,
-                'type': 2,  # EIP-1559
-                'chainId': 1,
-                'gas': 300000,  # =gasLimit; REVIEW: use params to set this?
-                'value': int(self.config.buy_params['BRIBE'] * 10 ** 18),
-                # bribe send with 'value' param
-                'maxPriorityFeePerGas': 0,
-                'maxFeePerGas': 2 * latest_block['baseFeePerGas']
-            })
-
-            signed_bribe_tx = self.w3.eth.account.signTransaction(bribe_tx, private_key=self.config.wallet_data['PRIVATE_KEY'])
-
-            bundle = [self.w3.toHex(signed_tx.rawTransaction), self.w3.toHex(signed_bribe_tx.rawTransaction)]
-
-            FlashBotsUtil.simulate(bundle, Web3.toHex(self.w3.eth.block_number + 1), self.config.wallet_data['PRIVATE_KEY'])
-            pass
-
-            # block_number = w3.eth.block_number
-            # for i in range(1, 3):
-            #     w3.flashbots.send_bundle(bundle, target_block_number=Web3.toHex(block_number + i))
-
-        else:
-            signed_tx = self.w3.eth.account.signTransaction(tx, private_key=self.config.wallet_data['PRIVATE_KEY'])
-            tx_hash = self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)
-            return self.w3.eth.waitForTransactionReceipt(tx_hash)
-
     @abc.abstractmethod
     def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):
         pass
@@ -167,59 +120,3 @@ class EvmBaseHelper(abc.ABC):
             abi=self.chain_data[f"ROUTER_ABI_{dex_name}"],
             address=self.chain_data[f"ROUTER_ADDRESS_{dex_name}"]
         )
-
-
-class FlashBotsUtil:
-    RELAY_URL = 'https://relay.flashbots.net/'
-
-    @staticmethod
-    def send_bundle(bundle, block_number, private_key):
-        headers = {
-            'Content-Type': 'application/json'
-        }
-
-        payload = json.dumps({
-            'jsonrpc': '2.0',
-            'id': 1,
-            'method': 'eth_sendBundle',
-            'params': [
-                {
-                    'txs': bundle,
-                    'blockNumber': block_number
-                }
-            ]
-        })
-
-        headers['X-Flashbots-Signature'] = FlashBotsUtil._get_flashbots_signature(private_key, payload)
-
-        response = requests.post(FlashBotsUtil.RELAY_URL, data=payload, headers=headers)
-        log_utils.log_info(f'Bundle sent to FlashBots. Response: {response.text}')
-
-    @staticmethod
-    def simulate(bundle, block_number, private_key):
-        headers = {
-            'Content-Type': 'application/json'
-        }
-
-        payload = json.dumps({
-            'jsonrpc': '2.0',
-            'id': 1,
-            'method': 'eth_callBundle',
-            'params': [
-                {
-                    'txs': bundle,
-                    'blockNumber': block_number,
-                    'stateBlockNumber': 'latest'
-                }
-            ]
-        })
-
-        headers['X-Flashbots-Signature'] = FlashBotsUtil._get_flashbots_signature(private_key, payload)
-
-        response = requests.post(FlashBotsUtil.RELAY_URL, data=payload, headers=headers)
-        log_utils.log_info(f'Called for bundle simulation. Response: {response.text}')
-
-    @staticmethod
-    def _get_flashbots_signature(private_key, payload_json):
-        message = messages.encode_defunct(text=Web3.keccak(text=payload_json).hex())
-        return Account.from_key(private_key).address + ':' + Web3.toHex(Account.sign_message(message, private_key).signature)
