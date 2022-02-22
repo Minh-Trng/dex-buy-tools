@@ -1,11 +1,11 @@
 # dex-buy-tools
 
 CLI application to quickly buy tokens from various networks using the standard DEX of the network:
-- Ethereum: Uniswap (only V2 for now, V3 support not yet implemented)
-- Binance Smart Chain: PancakeSwap
-- Avalanche: TraderJoe
-- Fantom: Spookyswap
-- Polygon: Quickswap
+- Ethereum (eth): Uniswap (only V2 for now, V3 support not yet implemented)
+- Binance Smart Chain (bsc): PancakeSwap
+- Avalanche (avax): TraderJoe
+- Fantom (ftm): Spookyswap
+- Polygon (poly): Quickswap
 
 Still a work-in-progress and will be continously updated, when I have time or the need for additional features.
 
