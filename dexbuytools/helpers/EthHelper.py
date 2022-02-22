@@ -51,10 +51,8 @@ class EthHelper(EvmBaseHelper):
 
         if output_v2 > output_v3:
             return self._perform_uniswapv2_buy(token_address)
-        elif output_v3 > 0:
-            return self._perform_uniswapv3_buy(token_address)
         else:
-            return None
+            return self._perform_uniswapv3_buy(token_address)
 
     def _perform_uniswapv2_buy(self, token_address):
         wallet_address = self.w3.toChecksumAddress(self._get_wallet_address_from_key())
@@ -77,7 +75,7 @@ class EthHelper(EvmBaseHelper):
             address=chain_data['ROUTER_ADDRESS_UNIV3']
         )
 
-        raise NotImplementedError
+        log_utils.log_error("Buying on UniswapV3 not yet implemented")
 
     def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):
         raise NotImplementedError()
