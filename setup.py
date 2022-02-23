@@ -13,6 +13,9 @@ setup(
     author_email='minhtrng0x@gmail.com',
     include_package_data=True,
     description='CLI-application to perform buys on various decentralized exchanges and different networks',
+    install_requires=[
+        'uniswap-python'
+    ],
     entry_points={
         'console_scripts': [
             'dexbuy = dexbuytools.__main__:dexbuy',

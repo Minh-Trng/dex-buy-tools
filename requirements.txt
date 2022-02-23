@@ -3,4 +3,5 @@ requests~=2.27.1
 setuptools~=57.0.0
 click~=8.0.3
 PyYAML~=6.0
-DexBuyTools~=0.1.0
+DexBuyTools~=0.1.post7
+uniswap-python~=0.5.5
