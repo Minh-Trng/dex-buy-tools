@@ -6,7 +6,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name='DexBuyTools',
-    version='0.1.post8',
+    version='0.1.post9',
     packages=find_packages(exclude=("tests", "my_config",)),
     license='MIT',
     author='minhtrng',

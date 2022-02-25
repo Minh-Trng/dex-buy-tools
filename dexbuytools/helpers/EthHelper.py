@@ -109,7 +109,7 @@ class EthHelper(EvmBaseHelper):
 
         block_number = self.w3.eth.block_number
         for i in range(1, 3):
-            FlashBotsUtil.send_bundle(bundle, block_number+i, self.config.wallet_data['PRIVATE_KEY'])
+            FlashBotsUtil.send_bundle(bundle, Web3.toHex(self.w3.eth.block_number + i), self.config.wallet_data['PRIVATE_KEY'])
 
 class FlashBotsUtil:
     RELAY_URL = 'https://relay.flashbots.net/'
