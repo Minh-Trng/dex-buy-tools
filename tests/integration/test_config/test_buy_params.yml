@@ -1,0 +1,41 @@
+---
+# denominated in the networks main token, e.g. Ether for the Ethereum network
+AMOUNT: 1
+
+# either get at least this many tokens out of the swap or revert the tx
+AMOUNT_OUT_MIN: 0
+
+#uses the swapExactTokensForTokens method to swap (e.g. using WETH instead of ETH -> cheaper)
+USE_WRAPPED_MAIN_TOKEN: false
+
+# allows for quick selling, if done manually
+APPROVE_AFTER_BUY: true
+
+# many tokens impose limit on how many tokens can be bought
+MAX_PERCENTAGE_OF_TOTAL_SUPPLY_BUY_LIMIT: 100
+
+# attempt to filter fake tokens, when trying to snipe based on name and if tokenomics details are known
+MIN_PERCENTAGE_OF_TOTAL_SUPPLY_IN_LIQUIDITY: 10
+MAX_PERCENTAGE_OF_TOTAL_SUPPLY_IN_LIQUIDITY: 100
+
+# denominated in the networks main token, e.g. Ether for the Ethereum network
+MIN_AMOUNT_OF_LIQUIDITY: 1
+
+#how much Wei should be added to the transactions gasPrice/-limit (on top of the current estimate given)
+GAS_PRICE_BONUS: 1000000000 # 1 GWEI
+GAS_LIMIT_BONUS: 100000
+
+# used for flashbots bundles, only applicable to Ethereum network. denominated in ETH
+BRIBE: 0.01
+
+# seconds until the trade is considered invalid
+DEADLINE_OFFSET: 60
+
+# cancel buy, if current gas costs of the network are too high, especially useful for Ethereum network
+# denominated in the networks main token
+MAX_GAS_ESTIMATE: 0.1
+
+# repeat buy this many times with different wallets (generated from seed phrase in wallet_config)
+WALLET_COUNT: 1
+
+MAX_SLIPPAGE_PERCENTAGE: 90
