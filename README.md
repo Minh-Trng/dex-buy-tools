@@ -18,3 +18,8 @@ pip install .
 Explanation:
 Buys the token on address 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56 (BUSD) on Binance smart chain with the wallet specified in 'bsc_wallet_data.yml'. The amount to buy and other parameters (such as amountOutMin, Deadline, or GasPrices) are specified in 'bsc_buy_params.yml'.
 Templates for the yml-Files can be found in dexbuytools/config.
+
+You can also omit the file paths for the configuration:
+> dexbuy instant bsc 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56
+
+in this case, the application will attempt to use the values in the template files in the dexbuytools/config directory 

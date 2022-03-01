@@ -70,11 +70,12 @@ class EvmBaseHelper(abc.ABC):
 
     def perform_uniswapv2_style_buy(
             self,
-            token_address):
+            token_address,
+            swap_method='swapExactETHForTokensSupportingFeeOnTransferTokens'):
 
         wallet_address = self.w3.toChecksumAddress(self._get_wallet_address_from_key())
 
-        tx = self.build_uniswapv2_style_tx(token_address, wallet_address)
+        tx = self.build_uniswapv2_style_tx(token_address, wallet_address, swap_method)
 
         signed_tx = self.w3.eth.account.signTransaction(tx, private_key=self.config.wallet_data['PRIVATE_KEY'])
         tx_hash = self.w3.eth.sendRawTransaction(signed_tx.rawTransaction)

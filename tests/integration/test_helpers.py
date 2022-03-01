@@ -11,7 +11,6 @@ USDC_ADDRESS_POLY = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'
 USDC_ADDRESS_AVAX = '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'
 PRIVATE_KEY = secrets.token_hex(32)
 
-
 @pytest.fixture()
 def mainnet_fork(request):
 
@@ -24,7 +23,7 @@ def mainnet_fork(request):
     network.connect(network_name)
 
     account = accounts.add(PRIVATE_KEY)
-    accounts[0].transfer(account, "10 ether")
+    accounts[0].transfer(account, "10 ether", gas_limit=100000)
 
     yield
 
@@ -38,34 +37,40 @@ def configuration():
     config_instance.wallet_data["PRIVATE_KEY"] = PRIVATE_KEY
     return config_instance
 
+
+@pytest.mark.brownie_network_name('avax-main-fork')
+def test_avax_helper(mainnet_fork, configuration):
+    mainnet_fork_rpc_url = network.web3.provider.endpoint_uri
+    helper = AvaxHelper(configuration, custom_rpc=mainnet_fork_rpc_url)
+    tx = helper.buy_instantly(USDC_ADDRESS_AVAX)
+    assert tx.transactionHash is not None
+    assert accounts[-1].balance() <= network.web3.toWei(9, "ether")
+
 @pytest.mark.brownie_network_name('bsc-main-fork')
-def test_BscHelper(mainnet_fork, configuration):
-    local_bsc_fork_rpc_url = network.web3.provider.endpoint_uri
-    helper = BscHelper(configuration, custom_rpc=local_bsc_fork_rpc_url)
+def test_bsc_helper(mainnet_fork, configuration):
+    mainnet_fork_rpc_url = network.web3.provider.endpoint_uri
+    helper = BscHelper(configuration, custom_rpc=mainnet_fork_rpc_url)
     tx = helper.buy_instantly(BUSD_ADDRESS_BSC)
     assert tx.transactionHash is not None
     assert accounts[-1].balance() <= network.web3.toWei(9, "ether")
 
 @pytest.mark.brownie_network_name('ftm-main-fork')
-def test_FtmHelper(mainnet_fork, configuration):
-    local_ftm_fork_rpc_url = network.web3.provider.endpoint_uri
-    helper = FtmHelper(configuration, custom_rpc=local_ftm_fork_rpc_url)
+def test_ftm_helper(mainnet_fork, configuration):
+    mainnet_fork_rpc_url = network.web3.provider.endpoint_uri
+    helper = FtmHelper(configuration, custom_rpc=mainnet_fork_rpc_url)
     tx = helper.buy_instantly(USDC_ADDRESS_FTM)
     assert tx.transactionHash is not None
     assert accounts[-1].balance() <= network.web3.toWei(9, "ether")
 
-@pytest.mark.brownie_network_name('polygon-main-fork')
-def test_PolyHelper(mainnet_fork, configuration):
-    local_poly_fork_rpc_url = network.web3.provider.endpoint_uri
-    helper = PolyHelper(configuration, custom_rpc=local_poly_fork_rpc_url)
-    tx = helper.buy_instantly(USDC_ADDRESS_POLY)
-    assert tx.transactionHash is not None
-    assert accounts[-1].balance() <= network.web3.toWei(9, "ether")
+@pytest.fixture(scope="module")
+def adjust_networks():
+    from brownie._config import CONFIG
+    CONFIG.networks["polygon-main"]['host'] = 'https://matic-mainnet.chainstacklabs.com'
 
-@pytest.mark.brownie_network_name('avax-main-fork')
-def test_AvaxHelper(mainnet_fork, configuration):
-    local_avax_fork_rpc_url = network.web3.provider.endpoint_uri
-    helper = PolyHelper(configuration, custom_rpc=local_avax_fork_rpc_url)
-    tx = helper.buy_instantly(USDC_ADDRESS_AVAX)
+@pytest.mark.brownie_network_name('polygon-main-fork')
+def test_poly_helper(mainnet_fork, configuration, adjust_networks):
+    mainnet_fork_rpc_url = network.web3.provider.endpoint_uri
+    helper = PolyHelper(configuration, custom_rpc=mainnet_fork_rpc_url)
+    tx = helper.buy_instantly(USDC_ADDRESS_POLY)
     assert tx.transactionHash is not None
     assert accounts[-1].balance() <= network.web3.toWei(9, "ether")
