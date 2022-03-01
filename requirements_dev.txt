@@ -1,0 +1,8 @@
+pytest~=6.2.5
+DexBuyTools~=0.1.post9
+setuptools~=57.0.0
+PyYAML~=5.4.1
+web3~=5.27.0
+requests~=2.27.1
+click~=8.0.3
+eth-brownie~=1.18.1
