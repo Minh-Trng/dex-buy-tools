@@ -27,7 +27,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Ganache as requirement for forking with brownie
-      run: npm install ganache
+      run: npm install ganache --global
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
