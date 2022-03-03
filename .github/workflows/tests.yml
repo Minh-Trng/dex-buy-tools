@@ -24,28 +24,14 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
 
-      # next couple steps taken from: https://github.com/trufflesuite/ganache/blob/develop/.github/workflows/push.yml
+      # https://github.com/trufflesuite/ganache/blob/develop/.github/workflows/pr.yml
       - name: Add msbuild to PATH
         if: startsWith(matrix.os, 'windows-')
         uses: microsoft/setup-msbuild@v1.0.2
-      - name: install node tools
-        if: startsWith(matrix.os, 'windows-')
-        uses: actions/setup-python@v2
-        with:
-          python-version: "2.7"
-      - name: install node-gyp
-        if: startsWith(matrix.os, 'windows-')
-        run: npm install --global node-gyp@7.1.2
-      - name: Set node config to use python2.7
-        if: startsWith(matrix.os, 'windows-')
-        run: npm config set python python2.7
-      - name: Set node config to set msvs_version to 2019
-        if: startsWith(matrix.os, 'windows-')
-        run: npm config set msvs_version 2019 --global
 
       - name: Install Ganache as requirement for forking with brownie
         run: npm install ganache --global
