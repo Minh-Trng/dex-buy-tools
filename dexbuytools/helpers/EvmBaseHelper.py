@@ -112,9 +112,45 @@ class EvmBaseHelper(abc.ABC):
     def _get_wallet_address_from_key(self):
         return self.w3.eth.account.from_key(self.config.wallet_data['PRIVATE_KEY']).address
 
-    @abc.abstractmethod
-    def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):
-        pass
+    #REVIEW: this method is in need for refactoring
+    def buy_on_liquidity(self, buy_params, address=None, search_term=None):
+        latest_blocknumber = self.w3.eth.blocknumber
+        while True:
+            try:
+                while latest_blocknumber >= self.w3.eth.blocknumber:
+                    latest_blocknumber = latest_blocknumber + 1
+                    block = self.w3.eth.get_block(latest_blocknumber, full_transactions=True)
+
+                    router_txs = [x for x in block['transactions'] if x['to'] == self.dex_router.address]
+
+                    for tx in router_txs:
+                        decoded_input = self.dex_router.decode_function_input(tx['input'])
+                        token_address = None
+                        func_name = decoded_input[0].fn_name
+                        func_args = decoded_input[1]
+                        if func_name == 'addLiquidity':
+                            if func_args['tokenA'] == self.chain_data['MAIN_TOKEN_ADDRESS']:
+                                token_address = func_args['tokenB']
+                            elif func_args['tokenB'] == self.chain_data['MAIN_TOKEN_ADDRESS']:
+                                token_address = func_args['tokenA']
+                        elif 'addLiquidity' in func_name: # addLiquidityETH or addLiquidityAVAX
+                            token_address = func_args['token']
+
+                        if token_address is not None:
+                            if self.w3.toChecksumAddress(token_address) == self.w3.toChecksumAddress(address):
+                                self.perform_uniswapv2_style_buy(token_address)
+
+                            token_contract = self.w3.eth.contract(abi=ERC20_ABI, address=token_address)
+                            token_name = token_contract.functions.name().call().lower()
+                            token_symbol = token_contract.functions.symbol().call().lower()
+                            if search_term in token_name or search_term in token_symbol:
+                                self.perform_uniswapv2_style_buy(token_address)
+
+
+            except Exception as e:
+                print(e)
+
+            time.sleep(1)
 
     def _get_dex_router_contract(self, dex_name):
         return self.w3.eth.contract(
