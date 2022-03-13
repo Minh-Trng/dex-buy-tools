@@ -5,7 +5,7 @@ import time
 from eth_account import messages
 from web3 import Web3
 from dexbuytools import log_utils
-from dexbuytools.helpers.data.general import ERC20_ABI
+from dexbuytools.helpers.data.general import ERC20_ABI, UNISWAP_V2_FACTORY_ABI, UNISWAP_V2_PAIR_ABI
 from dexbuytools.helpers.data.eth import chain_data as eth_chain_data
 from eth_account.account import Account
 import requests
@@ -73,6 +73,10 @@ class EvmBaseHelper(abc.ABC):
             token_address,
             swap_method='swapExactETHForTokensSupportingFeeOnTransferTokens'):
 
+        liquidity_requirements_passed = self._check_liquidity_requirements(token_address)
+        if not liquidity_requirements_passed:
+            return None
+
         wallet_address = self.w3.toChecksumAddress(self._get_wallet_address_from_key())
 
         tx = self.build_uniswapv2_style_tx(token_address, wallet_address, swap_method)
@@ -87,6 +91,39 @@ class EvmBaseHelper(abc.ABC):
             self._approve(self.w3, self.dex_router.address, token_address, wallet_address)
 
         return receipt
+
+    def _check_liquidity_requirements(self, token_address):
+        factory = self.w3.eth.contract(abi=UNISWAP_V2_FACTORY_ABI, address=self.dex_router.functions.factory().call())
+        pair_address = factory.functions.getPair(self.chain_data['MAIN_TOKEN_ADDRESS'], token_address).call()
+        pair_contract = self.w3.eth.contract(abi=UNISWAP_V2_PAIR_ABI, address=pair_address)
+        reserves = pair_contract.functions.getReserves().call()
+
+        if pair_contract.functions.token0().call().lower() == self.chain_data['MAIN_TOKEN_ADDRESS'].lower():
+            main_token_reserves, token_reserves = reserves[0], reserves[1]
+        else:
+            main_token_reserves, token_reserves = reserves[1], reserves[0]
+
+        main_token_contract = self.w3.eth.contract(abi=ERC20_ABI, address=self.chain_data['MAIN_TOKEN_ADDRESS'])
+        main_token_decimals = main_token_contract.functions.decimals().call()
+        if main_token_reserves//main_token_decimals < self.config.buy_params['MIN_AMOUNT_OF_LIQUIDITY']:
+            log_utils.log_info(f'The amount of {main_token_contract.functions.name().call()} provided as liquidity for '
+                               f'token {token_address} is lower than the value of MIN_AMOUNT_OF_LIQUIDITY '
+                               f'specified in buy_params')
+            return False
+
+        token_contract = self.w3.eth.contract(abi=ERC20_ABI, address=token_address)
+        total_supply = token_contract.functions.totalSupply().call()
+
+        percentage_of_supply_in_liq = token_reserves/total_supply*100
+
+        if (percentage_of_supply_in_liq < self.config.buy_params['MIN_PERCENTAGE_OF_TOTAL_SUPPLY_IN_LIQUIDITY'] or
+                percentage_of_supply_in_liq > self.config.buy_params['MAX_PERCENTAGE_OF_TOTAL_SUPPLY_IN_LIQUIDITY']):
+            log_utils.log_info(f'The percentage of the total supply of token {token_address} provided to the pool is '
+                               f'not within the min/max values specified with '
+                               f'MIN(MAX)_PERCENTAGE_OF_TOTAL_SUPPLY_IN_LIQUIDITY')
+            return False
+
+        return True
 
     def _approve(self, w3, dex_address, token_address, wallet_address):
         erc20_token = w3.eth.contract(
@@ -112,12 +149,12 @@ class EvmBaseHelper(abc.ABC):
     def _get_wallet_address_from_key(self):
         return self.w3.eth.account.from_key(self.config.wallet_data['PRIVATE_KEY']).address
 
-    #REVIEW: this method is in need for refactoring
-    def buy_on_liquidity(self, buy_params, address=None, search_term=None):
+    #REVIEW: this method is in need for refactoring. also should be made async, so tests can be run
+    def buy_on_liquidity(self, search_address=None, search_term=None):
         latest_blocknumber = self.w3.eth.blocknumber
         while True:
             try:
-                while latest_blocknumber >= self.w3.eth.blocknumber:
+                while latest_blocknumber < self.w3.eth.blocknumber:
                     latest_blocknumber = latest_blocknumber + 1
                     block = self.w3.eth.get_block(latest_blocknumber, full_transactions=True)
 
@@ -137,15 +174,16 @@ class EvmBaseHelper(abc.ABC):
                             token_address = func_args['token']
 
                         if token_address is not None:
-                            if self.w3.toChecksumAddress(token_address) == self.w3.toChecksumAddress(address):
-                                self.perform_uniswapv2_style_buy(token_address)
+                            if search_address is not None:
+                                if self.w3.toChecksumAddress(token_address) == self.w3.toChecksumAddress(search_address):
+                                    self.perform_uniswapv2_style_buy(token_address)
 
-                            token_contract = self.w3.eth.contract(abi=ERC20_ABI, address=token_address)
-                            token_name = token_contract.functions.name().call().lower()
-                            token_symbol = token_contract.functions.symbol().call().lower()
-                            if search_term in token_name or search_term in token_symbol:
-                                self.perform_uniswapv2_style_buy(token_address)
-
+                            if search_term is not None:
+                                token_contract = self.w3.eth.contract(abi=ERC20_ABI, address=token_address)
+                                token_name = token_contract.functions.name().call().lower()
+                                token_symbol = token_contract.functions.symbol().call().lower()
+                                if search_term in token_name or search_term in token_symbol:
+                                    self.perform_uniswapv2_style_buy(token_address)
 
             except Exception as e:
                 print(e)

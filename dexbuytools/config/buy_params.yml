@@ -11,8 +11,8 @@ USE_WRAPPED_MAIN_TOKEN: false
 # allows for quick selling, if done manually
 APPROVE_AFTER_BUY: true
 
-# many tokens impose limit on how many tokens can be bought
-MAX_PERCENTAGE_OF_TOTAL_SUPPLY_BUY_LIMIT: 5
+# (NOT IMPLEMENTED) many tokens impose limit on how many tokens can be bought
+# MAX_PERCENTAGE_OF_TOTAL_SUPPLY_BUY_LIMIT: 5
 
 # attempt to filter fake tokens, when trying to snipe based on name and if tokenomics details are known
 MIN_PERCENTAGE_OF_TOTAL_SUPPLY_IN_LIQUIDITY: 10
