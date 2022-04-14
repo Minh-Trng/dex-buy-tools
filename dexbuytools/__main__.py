@@ -30,8 +30,8 @@ def instant(network_name, token_address, buy_params_path, wallet_data_path, gene
 @dexbuy.command()
 # TODO: address, name or symbol have to be given
 @click.argument('network_name')
-@click.option('token_address', default=None)
-@click.option('search_term', default=None)
+@click.option('--token_address', default=None)
+@click.option('--search_term', default=None)
 @click.option('--buy_params_path', default=None)
 @click.option('--wallet_data_path', default=None)
 @click.option('--general_params_path', default=None)
@@ -40,6 +40,7 @@ def onliquidity(network_name, token_address, search_term, buy_params_path, walle
         Buy once liquidity gets added for token of given address or any token that matches the given search_name or
         search_term
     """
+
     if token_address is None and search_term is None:
         raise ValueError("No token_address or search_term provided")
 
