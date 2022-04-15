@@ -6,6 +6,7 @@ CLI application to quickly buy tokens from various networks using the standard D
 - Avalanche (avax): TraderJoe
 - Fantom (ftm): Spookyswap
 - Polygon (poly): Quickswap
+- Cronos (cro): MM-Finance
 
 Still a work-in-progress and will be continously updated, when I have time or the need for additional features.
 
