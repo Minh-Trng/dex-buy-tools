@@ -4,8 +4,9 @@ from dexbuytools.helpers.BscHelper import BscHelper
 from dexbuytools.helpers.EthHelper import EthHelper
 from dexbuytools.helpers.FtmHelper import FtmHelper
 from dexbuytools.helpers.PolyHelper import PolyHelper
+from dexbuytools.helpers.CroHelper import CroHelper
 
-SUPPORTED_NETWORKS = {'avax', 'bsc', 'eth', 'ftm', 'poly'}
+SUPPORTED_NETWORKS = {'avax', 'bsc', 'cro', 'eth', 'ftm', 'poly'}
 
 
 def get_helper(network_name, config, custom_rpc=None, dex_name=None) -> EvmBaseHelper:
@@ -17,6 +18,9 @@ def get_helper(network_name, config, custom_rpc=None, dex_name=None) -> EvmBaseH
 
     if network_name == 'bsc':
         return BscHelper(config, dex_name, custom_rpc)
+
+    if network_name == 'cro':
+        return CroHelper(config, dex_name, custom_rpc)
 
     if network_name == 'eth':
         return EthHelper(config, dex_name, custom_rpc)

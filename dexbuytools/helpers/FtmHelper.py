@@ -20,7 +20,7 @@ class FtmHelper(EvmBaseHelper):
     def buy_instantly(self, token_address):
         return super().perform_uniswapv2_style_buy(token_address)
 
-    def buy_on_liquidity(self, buy_params, address=None, search_name=None, search_symbol=None):
-        raise NotImplementedError()
+    def buy_on_liquidity(self, search_address=None, search_term=None):
+        return super().buy_on_liquidity(search_address=search_address, search_term=search_term)
 
 

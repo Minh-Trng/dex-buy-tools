@@ -4,3 +4,4 @@ BSC_RPC_URL: https://bsc-dataseed1.ninicoin.io
 ETH_RPC_URL: https://mainnet.infura.io/v3/...
 FTM_RPC_URL: https://rpc.ftm.tools/
 POLY_RPC_URL: https://polygon-rpc.com/
+CRO_RPC_URL: https://evm.cronos.org/
