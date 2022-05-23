@@ -151,10 +151,10 @@ class EvmBaseHelper(abc.ABC):
 
     #REVIEW: this method is in need for refactoring. also should be made async, so tests can be run
     def buy_on_liquidity(self, search_address=None, search_term=None):
-        latest_blocknumber = self.w3.eth.blocknumber
+        latest_blocknumber = self.w3.eth.block_number
         while True:
             try:
-                while latest_blocknumber < self.w3.eth.blocknumber:
+                while latest_blocknumber < self.w3.eth.block_number:
                     latest_blocknumber = latest_blocknumber + 1
                     block = self.w3.eth.get_block(latest_blocknumber, full_transactions=True)
 

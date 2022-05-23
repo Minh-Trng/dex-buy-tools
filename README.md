@@ -11,9 +11,12 @@ CLI application to quickly buy tokens from various networks using the standard D
 Still a work-in-progress and will be continously updated, when I have time or the need for additional features.
 
 # Installation:
-pip install .
+>pip install --editable .
 
 If you want to use this program on the Ethereum network, you need to specify a RPC-URL in config/general_params.yml
+
+The _--editable_-flag is only necessary if you either want to make adjustments to the code or use the default config-files
+(see below)
 
 # Sample Usage
 
@@ -40,3 +43,10 @@ Buys anytime liquidity is added to a token that either has 'inu' in its name or 
 
 The optional arguments "buy_params_path"
 and "wallet_data_path" can be specified as in the instant buy example.
+
+## Some remarks
+
+If you want to use the application on the Ethereum network, please keep in mind that this 
+implementation does not send the tx directly to the mainnet. Instead it uses the 
+[Flashbots-network](https://docs.flashbots.net/). This means that there is a higher chance your tx won't go
+through, but in that case you don't pay any gas either.
